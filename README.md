@@ -971,3 +971,8 @@ MIT — see [LICENSE](./LICENSE) for the full text.
 </svg>
 
 </div>
+
+## Handsoff notes
+
+<!-- handsoff-issue-624 -->
+- #624: 'Wrong Role' Authorization Tests Deny Every Signature Instead of Signing as the Wrong Party
