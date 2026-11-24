@@ -3763,6 +3763,30 @@ mod tests {
         }
     }
 
+    // --- keys list (#640) ---
+
+    #[test]
+    fn keys_list_reports_stored_identities() {
+        // After `keys add alice` and `keys add bob`, `keys list` must print
+        // both names; after `keys remove alice` only bob remains.
+        let mut store = crate::keystore::Keystore::in_memory();
+        store.add("alice", "SALICE").unwrap();
+        store.add("bob", "SBOB").unwrap();
+        let listed = store.list_keychain_identities().unwrap();
+        assert_eq!(listed, vec!["alice".to_string(), "bob".to_string()]);
+        store.remove("alice").unwrap();
+        let listed = store.list_keychain_identities().unwrap();
+        assert_eq!(listed, vec!["bob".to_string()]);
+    }
+
+    #[test]
+    fn keys_list_unsupported_index_is_honest() {
+        // When the index entry cannot be read, the handler must say listing is
+        // unsupported rather than claiming no keys are stored.
+        let store = crate::keystore::Keystore::in_memory_without_index();
+        assert!(store.list_keychain_identities().is_err());
+    }
+
     // --- trellis config (#485) ---
 
     fn test_config(contract_id: &str, source_key: &str) -> Config {

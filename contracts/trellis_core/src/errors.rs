@@ -38,11 +38,15 @@ use soroban_sdk::contracterror;
 #[non_exhaustive]
 pub enum TrellisError {
     /// The contract or agreement has already been initialised.
-    /// Prevents duplicate `create_agreement` calls for the same ID.
+    /// Returned by `init` when an agreement already exists for the supplied
+    /// ID, preventing duplicate initialisation.
     AlreadyInitialized = 1,
 
     /// The caller is not permitted to perform this action.
-    /// Covers payer-only, payee-only, and resolver-only guards.
+    /// Returned by `raise_dispute` when the caller is neither the agreement's
+    /// payer nor its payee. The other role gates (payer-only, payee-only and
+    /// resolver-only) are enforced by `require_auth` and trap rather than
+    /// returning this variant.
     Unauthorized = 2,
 
     /// No agreement exists in ledger storage for the supplied ID.
@@ -102,11 +106,12 @@ pub enum TrellisError {
     /// pre-advance a milestone".
     InvalidInitialMilestoneStatus = 11,
 
-    /// The payer/payee split supplied to `resolve_dispute` does not sum
-    /// to the milestone's locked amount. A split resolution must account
-    /// for every unit of escrowed funds exactly once; any other total either
+    /// The payer/payee split supplied to `resolve_dispute_split` does not sum
+    /// to the milestone's still-escrowed remainder (the locked amount minus
+    /// anything already released). A split resolution must account for every
+    /// unit of remaining escrowed funds exactly once; any other total either
     /// leaves funds stranded in the contract or attempts to pay out more
-    /// than was locked.
+    /// than remains escrowed.
     InvalidSplitAmounts = 12,
 
     /// `init` was called with more milestones than the contract's

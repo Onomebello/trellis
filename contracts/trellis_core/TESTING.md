@@ -106,13 +106,21 @@ cargo mutants --timeout 120
 
 ### 5. Snapshot Files (`test_snapshots/`)
 
-The hand-written suites (`test.rs`, `test_storage.rs`) record ledger state for
-each test into `test_snapshots/`. Regenerate them after a contract change with
-`make test-snapshots-update` and commit the result; CI fails on stale snapshots.
+The Soroban SDK test environment writes a JSON snapshot under
+`test_snapshots/` for every test that uses the default `Env`. In this crate
+that means the hand-written suites (`test.rs`, `test_storage.rs`). Snapshots
+are regenerated automatically on each `cargo test` run — there is no separate
+update command or tool to install.
 
 Property and panic-boundary tests do **not** write snapshots: their shared
 fixture `setup_mocked` uses `EnvTestConfig { capture_snapshot_at_drop: false }`,
 because one file per generated case added thousands of tracked files.
+
+**Reviewing snapshot diffs:** after `cargo test`, inspect any changed JSON in
+`test_snapshots/` and confirm it reflects the intended ledger-state change
+(e.g. new storage keys, changed balances, or altered event data). Commit the
+updated snapshots alongside the code change that caused them. CI fails on
+stale snapshots, so a forgotten update will surface as a failing check.
 
 ## CI Integration
 
